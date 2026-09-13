@@ -5107,7 +5107,8 @@ const MainContent = ({ onNewChat, resetKey, tunerConfig, onOpenDocument, onArtif
           style={{
             maxWidth: `${tunerConfig?.mainContentWidth || 768}px`,
             marginTop: `${tunerConfig?.mainContentMt || 0}px`,
-            paddingTop: '40vh'
+            // 移动端大幅减少顶部留白（桌面端保持 40vh 居中）
+            paddingTop: typeof window !== 'undefined' && window.innerWidth < 768 ? '8vh' : '40vh'
           }}
         >
 
@@ -5177,7 +5178,16 @@ const MainContent = ({ onNewChat, resetKey, tunerConfig, onOpenDocument, onArtif
           </div>
 
           {/* 输入框区域 */}
-          <div className="w-full relative group">
+          <div
+            className="w-full relative group"
+            style={
+              typeof window !== 'undefined' && window.innerWidth < 768
+                // 移动端：输入框固定贴合屏幕底部（含安全区避让），不再依赖 marginTop:auto
+                // （auto 会把外层列撑高整页滚动画布）
+                ? { position: 'fixed', left: 16, right: 16, bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))', zIndex: 40 }
+                : undefined
+            }
+          >
             <input
               type="file"
               ref={fileInputRef}

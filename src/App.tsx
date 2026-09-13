@@ -223,7 +223,8 @@ const Layout = () => {
   }>>([]);
   const [activeAnnouncementId, setActiveAnnouncementId] = useState<number | null>(null);
   const [isMarkingAnnouncementRead, setIsMarkingAnnouncementRead] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  // 移动端默认收起侧边栏（宽屏桌面端仍然默认展开）
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [newChatKey, setNewChatKey] = useState(0);
   const [authChecked, setAuthChecked] = useState(true);
