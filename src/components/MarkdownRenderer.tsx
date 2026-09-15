@@ -6,73 +6,10 @@ import { oneLight, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-import 'katex/dist/katex.min.css';
+import { deduplicateSources, normalizeMathBlocks, stripCiteTags, type CitationSource } from '../utils/markdown-citations';
 
-export interface CitationSource {
-  url: string;
-  title: string;
-  cited_text?: string;
-}
-
-interface MarkdownRendererProps {
-  content: string;
-  citations?: CitationSource[];
-  showSourcesList?: boolean;
-}
-
-/**
- * 对 citations 按 url 去重，返回去重后的来源列表（保持首次出现顺序）
- */
-function deduplicateSources(citations: CitationSource[]): CitationSource[] {
-  const seen = new Map<string, CitationSource>();
-  for (const c of citations) {
-    if (!seen.has(c.url)) {
-      seen.set(c.url, c);
-    }
-  }
-  return Array.from(seen.values());
-}
-
-/**
- * 获取 url 对应的引用编号（1-based）
- */
-function getSourceIndex(url: string, sources: CitationSource[]): number {
-  const idx = sources.findIndex((s) => s.url === url);
-  return idx >= 0 ? idx + 1 : 0;
-}
-
-/**
- * 移除 <cite index="...">...</cite> 标签，保留内部文本
- */
-function stripCiteTags(text: string): string {
-  return text.replace(/<cite\s+index="[^"]*"\s*>([\s\S]*?)<\/cite>/g, '$1');
-}
-
-/**
- * 规范化 $$...$$ 数学块：
- * - LLM 经常输出 `$$...`(同一行紧跟内容) 且中间包含换行，这会导致 remark-math 对齐失败/截断。
- * - 这里将“包含换行的 $$...$$”统一改写成标准块格式：
- *   \n\n$$\n...\n$$\n\n
- *
- * 注意：跳过 ```fenced code```，避免改写代码块里的 $$
- */
-function normalizeMathBlocks(text: string): string {
-  // Split on fenced code blocks and only normalize non-code segments.
-  const parts = text.split(/(```[\s\S]*?```)/g);
-  return parts
-    .map((part) => {
-      if (part.startsWith('```')) return part;
-      return part.replace(/\$\$([\s\S]+?)\$\$/g, (_m, inner: string) => {
-        if (!inner.includes('\n')) {
-          // Keep inline-style $$...$$ untouched to avoid changing layout unexpectedly.
-          return `$$${inner}$$`;
-        }
-        const body = inner.trim();
-        return `\n\n$$\n${body}\n$$\n\n`;
-      });
-    })
-    .join('');
-}
+// 兼容旧引用：SearchProcess 等从本文件直接导入类型
+export type { CitationSource } from '../utils/markdown-citations';
 
 /** 引用角标组件 */
 const CitationBadge: React.FC<{ index: number; source: CitationSource }> = ({ index, source }) => {
