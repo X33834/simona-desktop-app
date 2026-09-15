@@ -6,7 +6,8 @@ import {
   ChevronRight, ChevronDown, Folder, File, MoreHorizontal, Info, Eye, Code,
   Settings, Check, MessageSquare, ClipboardList, Upload, Github, X, FolderPlus
 } from 'lucide-react';
-import MarkdownRenderer, { CodeBlock } from './MarkdownRenderer';
+import MarkdownRenderer from './MarkdownRenderer';
+import { CodeBlock } from './CodeBlock';
 import { getSkills, getSkillDetail, getSkillFile, createSkill, updateSkill, deleteSkill, toggleSkill, importSkill, getGithubStatus, getGithubAuthUrl, disconnectGithub } from '../api';
 import searchIconImg from '../assets/icons/search-icon.png';
 import skillsImg from '../assets/icons/skills.png';
