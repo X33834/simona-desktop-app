@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 基础深蓝渐变 -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:startColor="@color/background"
+                android:endColor="@color/background_end" />
+            <corners android:radius="2dp" />
+        </shape>
+    </item>
+    <!-- 右上角品牌橙光晕 -->
+    <item
+        android:width="340dp"
+        android:height="340dp"
+        android:end="-140dp"
+        android:gravity="top|end"
+        android:top="-140dp">
+        <shape android:shape="oval">
+            <solid android:color="@color/primary_glow" />
+        </shape>
+    </item>
+    <!-- 左下角淡光晕 -->
+    <item
+        android:width="280dp"
+        android:height="280dp"
+        android:bottom="-120dp"
+        android:gravity="bottom|start"
+        android:start="-120dp">
+        <shape android:shape="oval">
+            <solid android:color="@color/primary_glow_soft" />
+        </shape>
+    </item>
+</layer-list>

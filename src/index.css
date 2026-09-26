@@ -12,13 +12,14 @@
 @import '@fontsource/noto-serif-sc/600.css';
 @import '@fontsource/noto-serif-sc/700.css';
 
+/* === Mobile Optimizations === */
+/* 注意：@import 必须位于所有规则/指令之前，否则会被静默忽略（曾导致移动端 CSS 全量失效） */
+@import './mobile-optimizations.css';
+
 /* === Tailwind CSS Directives === */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* === Mobile Optimizations === */
-@import './mobile-optimizations.css';
 
 /* === CSS Variables (Theme) === */
 :root {

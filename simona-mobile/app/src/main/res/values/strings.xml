@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Simona Mobile</string>
+    <string name="app_name">Simona</string>
+    <string name="tagline">本地 AI 智能助手 · 移动端</string>
+    <string name="setup_hero">欢迎使用 Simona</string>
+    <string name="setup_hero_desc">正在准备本地运行环境，首次初始化约需数分钟</string>
     <string name="setup_title">Simona 初始化</string>
     <string name="setup_desc">正在准备运行环境，请稍候...</string>
     <string name="retry">重试</string>
