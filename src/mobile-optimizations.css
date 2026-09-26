@@ -296,3 +296,12 @@
     box-shadow: 2px 0 12px rgba(0, 0, 0, 0.12);
   }
 }
+
+/* min-h-screen 动态视口高度（dvh）—— 移动浏览器地址栏收展不再跳动 */
+@media (max-width: 767px) {
+  @supports (min-height: 100dvh) {
+    [class*="min-h-screen"] {
+      min-height: 100dvh !important;
+    }
+  }
+}
