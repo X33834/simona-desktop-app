@@ -1,12 +1,12 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { ChevronDown, Copy, Check } from 'lucide-react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneLight, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { ChevronDown } from 'lucide-react';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-import 'katex/dist/katex.min.css';
+
+/** 代码高亮块按需加载（react-syntax-highlighter + prism 体积大，仅在出现代码块时拉取） */
+const CodeBlock = React.lazy(() => import('./CodeBlock'));
 
 export interface CitationSource {
   url: string;
@@ -176,83 +176,17 @@ const SourcesList: React.FC<{ sources: CitationSource[] }> = ({ sources }) => {
   );
 };
 
-/** 代码块组件（带复制按钮和语法高亮） */
-export const CodeBlock: React.FC<{ language: string; code: string; className?: string }> = ({ language, code, className }) => {
-  const [copied, setCopied] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof document === 'undefined') return false;
-    return document.documentElement.classList.contains('dark');
-  });
-
-  useEffect(() => {
-    const checkDark = () => setIsDark(document.documentElement.classList.contains('dark'));
-    checkDark();
-
-    // Observer for class changes on html element
-    const observer = new MutationObserver(checkDark);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-    return () => observer.disconnect();
-  }, []);
-
-  const handleCopy = useCallback(() => {
-    import('../utils/clipboard').then(({ copyToClipboard }) => {
-      copyToClipboard(code).then((success) => {
-        if (success) {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
-        }
-      });
-    });
-  }, [code]);
-
-  return (
-    <div
-      className={`relative rounded-md overflow-hidden my-3 text-sm border ${isDark ? 'border-[#383836] bg-[#30302E]' : 'border-[#E5E5E5] bg-[#FCFCFA]'} ${className || ''}`}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      {language && (
-        <div className={`px-2 pt-1.5 pb-0 text-[12px] font-mono select-none ${isDark ? 'text-[#999]' : 'text-[#666]'}`}>
-          {language}
-        </div>
-      )}
-      {hovered && (
-        <button
-          onClick={handleCopy}
-          className={`absolute top-2 right-2 p-1.5 rounded-md transition-colors z-10 border ${isDark ? 'bg-[#404040] border-[#555] text-[#CCC] hover:bg-[#505050] hover:text-white' : 'bg-white border-[#E5E5E5] text-[#666] hover:bg-[#F5F5F5] hover:text-[#333]'}`}
-          title="复制代码"
-        >
-          {copied ? <Check size={14} /> : <Copy size={14} />}
-        </button>
-      )}
-      <SyntaxHighlighter
-        language={language || 'text'}
-        style={isDark ? vscDarkPlus : oneLight}
-        customStyle={{
-          margin: 0,
-          padding: '12px',
-          paddingTop: language ? '4px' : '12px',
-          background: 'transparent',
-          fontSize: '15px',
-          border: 'none',
-          boxShadow: 'none',
-        }}
-        codeTagProps={{
-          style: { fontFamily: "Menlo, Monaco, SF Mono, Cascadia Code, Fira Code, Consolas, Courier New, monospace" }
-        }}
-      >
-        {code}
-      </SyntaxHighlighter>
-    </div>
-  );
-};
-
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, citations, showSourcesList = false }) => {
   const processed = normalizeMathBlocks(stripCiteTags(content));
   const sources = citations ? deduplicateSources(citations) : [];
   const hasCitations = sources.length > 0;
+
+  // 仅当消息包含数学公式($$ / \( / \[)时，按需加载 katex 样式，避免主包永久携带
+  useEffect(() => {
+    if (/\$\$|\\\(|\\\[/.test(processed)) {
+      import('katex/dist/katex.min.css').catch(() => { /* 加载失败不影响正文渲染 */ });
+    }
+  }, [processed]);
 
   // 为每段文本末尾添加引用角标
   // 由于流式传输中 citations 是按 block 级别的，我们在整个消息末尾统一显示角标
@@ -409,7 +343,11 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, citations,
             const language = className?.replace('language-', '') || '';
             if (isBlock) {
               const codeText = String(children).replace(/\n$/, '');
-              return <CodeBlock language={language} code={codeText} className={className} {...props} />;
+              return (
+                <React.Suspense fallback={null}>
+                  <CodeBlock language={language} code={codeText} className={className} {...props} />
+                </React.Suspense>
+              );
             }
             return (
               <code className="inline-code px-1.5 py-0 rounded-md text-[14.5px] font-mono border border-transparent leading-none" {...props}>

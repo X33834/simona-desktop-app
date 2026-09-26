@@ -6,28 +6,30 @@ import MainContent from './components/MainContent';
 import { IconSidebarToggle } from './components/Icons';
 import { updateConversation, deleteConversation, getUnreadAnnouncements, markAnnouncementRead, getSystemStatus } from './api';
 import GitBashRequiredModal from './components/GitBashRequiredModal';
-import Auth from './components/Auth';
 import Onboarding from './components/Onboarding';
-import SettingsPage from './components/SettingsPage';
-import UpgradePlan from './components/UpgradePlan';
-import DocumentPanel from './components/DocumentPanel';
-import ArtifactsPanel from './components/ArtifactsPanel';
-import ArtifactsPage from './components/ArtifactsPage';
 import DraggableDivider from './components/DraggableDivider';
 import { DocumentInfo } from './components/DocumentCard';
-import AdminLayout from './components/admin/AdminLayout';
-import AdminDashboard from './components/admin/AdminDashboard';
-import AdminKeyPool from './components/admin/AdminKeyPool';
-import AdminUsers from './components/admin/AdminUsers';
-import AdminPlans from './components/admin/AdminPlans';
-import AdminRedemption from './components/admin/AdminRedemption';
-import AdminModels from './components/admin/AdminModels';
-import AdminAnnouncements from './components/admin/AdminAnnouncements';
-import ChatsPage from './components/ChatsPage';
-import CustomizePage from './components/CustomizePage';
-import ProjectsPage from './components/ProjectsPage';
-import CoworkMode from './components/CoworkMode';
-import WordCountControl from './components/WordCountControl';
+
+// —— 页面级代码分割：重页面按进入时懒加载，减少冷启动主包体积 ——
+const Auth = React.lazy(() => import('./components/Auth'));
+const SettingsPage = React.lazy(() => import('./components/SettingsPage'));
+const UpgradePlan = React.lazy(() => import('./components/UpgradePlan'));
+const DocumentPanel = React.lazy(() => import('./components/DocumentPanel'));
+const ArtifactsPanel = React.lazy(() => import('./components/ArtifactsPanel'));
+const ArtifactsPage = React.lazy(() => import('./components/ArtifactsPage'));
+const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
+const AdminDashboard = React.lazy(() => import('./components/admin/AdminDashboard'));
+const AdminKeyPool = React.lazy(() => import('./components/admin/AdminKeyPool'));
+const AdminUsers = React.lazy(() => import('./components/admin/AdminUsers'));
+const AdminPlans = React.lazy(() => import('./components/admin/AdminPlans'));
+const AdminRedemption = React.lazy(() => import('./components/admin/AdminRedemption'));
+const AdminModels = React.lazy(() => import('./components/admin/AdminModels'));
+const AdminAnnouncements = React.lazy(() => import('./components/admin/AdminAnnouncements'));
+const ChatsPage = React.lazy(() => import('./components/ChatsPage'));
+const CustomizePage = React.lazy(() => import('./components/CustomizePage'));
+const ProjectsPage = React.lazy(() => import('./components/ProjectsPage'));
+const CoworkMode = React.lazy(() => import('./components/CoworkMode'));
+const WordCountControl = React.lazy(() => import('./components/WordCountControl'));
 
 const Tooltip = ({ children, text, shortcut }: { children: React.ReactNode; text: string; shortcut?: string }) => {
   const [show, setShow] = useState(false);
@@ -895,6 +897,7 @@ const Layout = () => {
 const App = () => {
   return (
     <HashRouter>
+      <React.Suspense fallback={<div className="h-full w-full flex items-center justify-center text-simona-textSecondary">加载中…</div>}>
       <Routes>
         <Route path="/login" element={<Auth />} />
         <Route path="/admin" element={<AdminLayout />}>
@@ -915,6 +918,7 @@ const App = () => {
         <Route path="/chat/:id" element={<Layout />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </React.Suspense>
     </HashRouter>
   );
 };
