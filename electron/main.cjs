@@ -145,6 +145,29 @@ function createWindow() {
         mainWindow.show();
     });
 
+    // ── Content-Security-Policy（仅生产环境）──
+    // 开发模式依赖 Vite HMR 的 inline 脚本，不加 CSP；
+    // 生产打包后给所有响应注入 CSP：默认只允许自身 + 必要 CDN/本地 API/WS。
+    if (!isDev) {
+        mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+            callback({
+                responseHeaders: {
+                    ...details.responseHeaders,
+                    'Content-Security-Policy': [
+                        "default-src 'self'; " +
+                        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; " +
+                        "style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; " +
+                        "img-src 'self' data: blob: https:; " +
+                        "font-src 'self' data: https:; " +
+                        "connect-src 'self' https: http://127.0.0.1:* http://localhost:* ws: wss:; " +
+                        "frame-src 'self' https:; " +
+                        "object-src 'none'; base-uri 'self'; form-action 'self'"
+                    ]
+                }
+            });
+        });
+    }
+
     // Zoom keyboard shortcuts — Electron doesn't handle Ctrl+= (plus) by default on some layouts
     const TITLE_BAR_BASE_HEIGHT = 44;
     const applyZoom = (factor) => {
