@@ -647,7 +647,12 @@ const MessageList = React.memo<MessageListProps>(({
         }
       `}</style>
       {messages.map((msg: any, idx: number) => (
-        <div key={idx} className="mb-6 group" data-message-index={idx}>
+        <div
+          key={idx}
+          className="mb-6 group"
+          data-message-index={idx}
+          style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 220px' }}
+        >
           {(msg.is_summary === 1 || msg.is_compact_boundary) && (
             <div className="flex items-center gap-3 mb-5 mt-2">
               <div className="flex-1 h-px bg-simona-border" />
@@ -2561,7 +2566,9 @@ const MainContent = ({ onNewChat, resetKey, tunerConfig, onOpenDocument, onArtif
     // 只在加载中（模型正在生成）或用户刚发送消息时才自动滚动
     // 对话结束后不要自动滚动，避免用户正在查看历史消息时被打断
     if (isAtBottomRef.current && loading && !userScrolledUpRef.current) {
-      scrollToBottom('auto');
+      // 每帧最多合并一次滚动，避免流式输出时每 token 都触发同步布局
+      const raf = requestAnimationFrame(() => scrollToBottom('auto'));
+      return () => cancelAnimationFrame(raf);
     }
   }, [messages, loading]);
 
